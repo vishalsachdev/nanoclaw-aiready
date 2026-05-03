@@ -145,6 +145,16 @@ pm2 logs nanoclaw-aiready --lines 100   # watch startup
 - The Resend (Chat SDK) channel assumes Resend Inbound; needs to be optional or split into "send-only" / "send + inbound" variants.
 - Cloudflare Email Worker pattern is a clean alternative to Resend Inbound and worth blessing in the spec.
 
-## Audit-log MCP tool — DEFERRED
+## Audit-log exporter — DEFERRED (and reframed)
 
-Task #6 (audit-log MCP tool) is not yet implemented. Once the bot is running, the next iteration is to add a small MCP tool under `container/agent-runner/src/mcp-tools/audit-log.ts` that the agent calls per turn to write the inbound + outbound + commit SHAs to `/workspace/extra/ai-ready-illinois/discussions/audit-log/<channel>/<timestamp>-<in|out>.md`. Until then, the audit log discipline is enforced only by the persona prompt + manual review.
+The original plan called for a per-turn MCP tool the agent invokes. That was duplicating v2's write path: v2 already persists every message in per-session `inbound.db` + `outbound.db`. ProgramOS's `docs/05-audit-logging.md` has been updated to reflect the right pattern — a **post-session exporter** that:
+
+1. Hooks into v2's session-close event (or a periodic cron, whichever fits).
+2. Opens the closed session's `inbound.db` + `outbound.db`.
+3. Reads the messages for that session.
+4. Writes one markdown file per inbound + outbound to `/root/ai-ready-illinois/discussions/audit-log/<channel>/<timestamp>-<in|out>.md` (per the audit-log spec schema).
+5. Commits to the program repo with `chore(audit-log): <channel>/<timestamp>`.
+
+Until this is implemented, audit discipline is enforced only by the persona prompt + manual review. The runtime store (`data/v2-sessions/<group>/<session>/inbound.db`/`outbound.db`) is the operational record; nothing is lost, just not yet exported to git.
+
+Implementation candidate location: `scripts/export-audit-log.ts` (host-side; runs in the v2 host process or as a separate cron). See `docs/05-audit-logging.md` in the ProgramOS spec for the schema the exporter must satisfy.
