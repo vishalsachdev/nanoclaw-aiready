@@ -1,0 +1,18 @@
+name = "aiready-email-inbox"
+main = "src/index.ts"
+compatibility_date = "2026-01-15"
+compatibility_flags = ["nodejs_compat"]
+account_id = "e64cab2cda0c00bba0784e6cd56e36c6"
+
+# Triggered by Cloudflare Email Routing rule on `aiready@illinihunt.org`.
+# Email Workers attach to routing rules, not URL routes — no `routes`/`workers_dev` config.
+workers_dev = false
+
+[vars]
+WEBHOOK_URL = "https://aiready.illinihunt.org/email"
+# WEBHOOK_SECRET is set as a Worker secret via:
+#   wrangler secret put WEBHOOK_SECRET
+# Value matches nanoclaw-aiready/.env so the VPS handler can verify the bearer.
+
+[observability]
+enabled = true

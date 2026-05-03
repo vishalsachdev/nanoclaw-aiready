@@ -7,3 +7,6 @@
 // self-registration import below.
 
 import './cli.js';
+import './telegram.js';
+import './resend.js';
+import './email-cf-worker.js';

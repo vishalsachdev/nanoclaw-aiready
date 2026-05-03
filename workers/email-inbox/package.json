@@ -1,0 +1,19 @@
+{
+  "name": "aiready-email-inbox",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloudflare Email Worker for nanoclaw-aiready: parses inbound MIME and forwards to the bot's webhook.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail aiready-email-inbox",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "postal-mime": "^2.4.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260101.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^3.90.0"
+  }
+}
