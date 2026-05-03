@@ -39,12 +39,7 @@ import http from 'http';
 import { readEnvFile } from '../env.js';
 import { log } from '../log.js';
 import { registerChannelAdapter } from './channel-registry.js';
-import type {
-  ChannelAdapter,
-  ChannelSetup,
-  InboundMessage,
-  OutboundMessage,
-} from './adapter.js';
+import type { ChannelAdapter, ChannelSetup, InboundMessage, OutboundMessage } from './adapter.js';
 
 const CHANNEL_NAME = 'email-cf-worker';
 const CHANNEL_TYPE = 'email';
@@ -147,11 +142,7 @@ class EmailCfWorkerAdapter implements ChannelAdapter {
     return this.server !== null && this.server.listening;
   }
 
-  async deliver(
-    platformId: string,
-    _threadId: string | null,
-    message: OutboundMessage,
-  ): Promise<string | undefined> {
+  async deliver(platformId: string, _threadId: string | null, message: OutboundMessage): Promise<string | undefined> {
     const content = (message.content ?? {}) as EmailOutboundContent;
     const subject = content.subject || 'Re: (no subject)';
     const html = content.html || (content.text ? `<pre>${escapeHtml(content.text)}</pre>` : '');
@@ -196,10 +187,7 @@ class EmailCfWorkerAdapter implements ChannelAdapter {
 
   // ---- private ----
 
-  private async handleRequest(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-  ): Promise<void> {
+  private async handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     if (req.method === 'GET' && req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'text/plain' });
       res.end('ok');
@@ -250,6 +238,15 @@ class EmailCfWorkerAdapter implements ChannelAdapter {
       id: payload.message_id ?? `cfworker-${Date.now()}`,
       kind: 'chat',
       content: {
+        // Sender identity: v2's permissions module checks `senderId`,
+        // `sender`, or `author.userId` on the message content. Without
+        // one of these, default `strict` / `request_approval` policies
+        // drop the message before the agent ever sees it. We set all
+        // three to the canonicalized From address so any of those
+        // resolvers picks it up.
+        senderId: platformId,
+        sender: platformId,
+        author: { userId: platformId, displayName: payload.from },
         from: payload.from,
         subject: payload.subject,
         text: payload.text,
@@ -278,15 +275,14 @@ class EmailCfWorkerAdapter implements ChannelAdapter {
 }
 
 function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function stripHtml(s: string): string {
-  return s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  return s
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 registerChannelAdapter(CHANNEL_NAME, {

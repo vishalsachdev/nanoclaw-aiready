@@ -56,7 +56,14 @@ export default {
       attachments: (parsed.attachments ?? []).map((a) => ({
         filename: a.filename,
         mime_type: a.mimeType,
-        size: a.content?.byteLength ?? 0,
+        // postal-mime types content as `string | ArrayBuffer | Uint8Array`.
+        // ArrayBuffer/Uint8Array have `byteLength`; string has `length` in
+        // chars (close-enough proxy here since we only use this for the
+        // payload metadata, not security accounting).
+        size:
+          typeof a.content === 'string'
+            ? a.content.length
+            : (a.content?.byteLength ?? 0),
         // Content omitted to keep payload light; bot can request raw via Worker if needed later.
       })),
       raw_size: message.rawSize,
