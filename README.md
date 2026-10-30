@@ -1,3 +1,7 @@
+> **Shelved 2026-10-30. Do not resume without asking Vishal.**
+> Bot runtime for the Hub Coordinator; idle since 2026-05-03. Kept as code, not merged.
+> Active Hub work: `~/research/nsf-ai-ready` (vishalsachdev/nsf-ai-ready). Knowledge base: `~/research/nsf-ai-ready-kb` (project-inbox), chosen over the Hub Coordinator bot on 2026-10-23.
+
 <p align="center">
   <img src="assets/nanoclaw-logo.png" alt="NanoClaw" width="400">
 </p>
